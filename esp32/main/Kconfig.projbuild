@@ -1,0 +1,22 @@
+menu "WHOOP Desk Display"
+
+    config WHOOP_WIFI_SSID
+        string "Wi-Fi SSID"
+        default "myssid"
+        help
+            SSID of the Wi-Fi network the ESP32 connects to.
+
+    config WHOOP_WIFI_PASSWORD
+        string "Wi-Fi Password"
+        default "mypass"
+        help
+            Password for the Wi-Fi network.
+
+    config WHOOP_BACKEND_URL
+        string "Backend API URL"
+        default ""
+        help
+            URL of the backend /api/snapshot endpoint.
+            Leave empty to use hardcoded stubs for development.
+
+endmenu

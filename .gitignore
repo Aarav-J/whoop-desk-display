@@ -1,0 +1,25 @@
+# Credentials & tokens
+.whoop_tokens.json
+
+# macOS binaries and bundles
+whoop_ble
+whoop_ble.app/
+
+# ESP-IDF build artifacts
+esp32/build/
+esp32/managed_components/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ESP-IDF generated
+esp32/sdkconfig.old
+esp32/.embedder/
+esp32/.cache/
