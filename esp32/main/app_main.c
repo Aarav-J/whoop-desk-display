@@ -1,5 +1,6 @@
 #include "whoop_ble.h"
 #include "whoop_api.h"
+#include "display.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -49,6 +50,8 @@ static void on_api_snapshot(const whoop_snapshot_t *snap) {
     ESP_LOGI(TAG, "  Max HR:     %d bpm  (alert at %d)",
              snap->max_hr, (int)(snap->max_hr * 0.9f));
     ESP_LOGI(TAG, "");
+
+    display_set_recovery(snap->recovery_score);
 }
 
 // ── Main task — consumes BLE HR + evaluates triggers ─────────────────────
@@ -70,6 +73,7 @@ static void main_task(void *pv) {
                 ESP_LOGI(TAG, "❤️  %3d bpm  (Δ=%.1fs)", msg.hr, delta_s);
                 last_hr = msg.hr;
                 last_hr_tick = now;
+                display_set_hr(msg.hr, true);
 
                 // ── Alert: HR above 90% of max ─────────────────────────
                 if (max_hr > 0 && msg.hr >= (uint16_t)(max_hr * 0.9f)) {
@@ -78,6 +82,7 @@ static void main_task(void *pv) {
                 }
             } else {
                 ESP_LOGI(TAG, "—  (off body / no contact)");
+                display_set_hr(0, false);
             }
         }
 
@@ -86,6 +91,7 @@ static void main_task(void *pv) {
             TickType_t elapsed = xTaskGetTickCount() - last_hr_tick;
             if (elapsed > pdMS_TO_TICKS(10000)) {
                 ESP_LOGW(TAG, "No HR data for %.0fs", elapsed * portTICK_PERIOD_MS / 1000.0f);
+                display_set_hr(0, true);
                 last_hr = 0; // suppress repeated warnings
             }
         }
@@ -96,6 +102,12 @@ static void main_task(void *pv) {
 void app_main(void) {
     ESP_LOGI(TAG, "════ WHOOP desk display ════");
     ESP_LOGI(TAG, "ESP32-S3 + NimBLE + ST7789");
+
+    // Bring up LCD first so boot status is visible
+    esp_err_t disp_err = display_init();
+    if (disp_err != ESP_OK) {
+        ESP_LOGE(TAG, "Display init failed: %s", esp_err_to_name(disp_err));
+    }
 
     // Create HR queue
     g_hr_queue = xQueueCreate(16, sizeof(ble_hr_msg_t));

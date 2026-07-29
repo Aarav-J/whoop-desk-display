@@ -92,19 +92,36 @@ python3 verify_whoop.py
 
 Walks through OAuth login, fetches recovery / strain / sleep cycles, and dumps to stdout.
 
-## Display wiring (ST7789V2)
+## Display wiring (Waveshare 1.69″ ST7789V2)
+
+The module is a 4-wire SPI IPS panel: **240×280**, controller **ST7789V2**, GH1.25 8-pin cable. Power and logic must both be **3.3V** (do not mix 5V logic with 3.3V VCC).
+
+### Default pin map (ESP32-S3)
+
+| LCD pin | Function | ESP32-S3 GPIO | Notes |
+|---------|----------|---------------|-------|
+| **VCC** | Power | **3V3** | 3.3V only |
+| **GND** | Ground | **GND** | Common ground |
+| **DIN** | SPI MOSI / SDA | **GPIO11** | Data to display |
+| **CLK** | SPI SCLK / SCL | **GPIO12** | SPI clock |
+| **CS** | Chip select | **GPIO10** | Active low |
+| **DC** | Data / command | **GPIO9** | Low = cmd, high = data |
+| **RST** | Reset | **GPIO14** | Active low |
+| **BL** | Backlight | **GPIO13** | Active high on this module |
 
 ```
-ESP32-S3       Display
-──────────     ───────
-GPIOx  SCLK →  SCL
-GPIOx  MOSI →  SDA (MOSI)
-GPIOx  DC   →  DC
-GPIOx  RST  →  RST
-GPIOx  CS   →  CS
-GPIOx  BL   →  BL (backlight, PWM-capable)
-3.3V   VCC  →  VCC
-GND    GND  →  GND
+ESP32-S3                 Waveshare 1.69" LCD
+──────────               ──────────────────
+3V3  ─────────────────→  VCC
+GND  ─────────────────→  GND
+GPIO11 (MOSI) ────────→  DIN
+GPIO12 (SCLK) ────────→  CLK
+GPIO10 ───────────────→  CS
+GPIO9  ───────────────→  DC
+GPIO14 ───────────────→  RST
+GPIO13 ───────────────→  BL
 ```
 
-Pin assignments TBD — configure in Kconfig or `app_main.c`.
+Change pins in `idf.py menuconfig` → **WHOOP Desk Display** → **Waveshare 1.69" LCD pins**, or override `CONFIG_WHOOP_LCD_PIN_*` in `sdkconfig.defaults`.
+
+Avoid ESP32-S3 USB pins (19/20), boot/strapping pins (0, 45, 46), and the flash/PSRAM SPI pins on your module (often 26–37 on octal parts).

@@ -3,6 +3,7 @@ idf_component_register(
         "app_main.c"
         "whoop_ble.c"
         "whoop_api.c"
+        "display.c"
     INCLUDE_DIRS
         "."
     REQUIRES
@@ -14,6 +15,10 @@ idf_component_register(
         esp-tls
         cjson
         bt
+        esp_lcd
+        driver
+        esp_lvgl_port
+        lvgl
 )
 
 # Flash arguments for ESP32-S3 via USB:
