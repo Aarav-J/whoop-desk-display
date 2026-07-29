@@ -41,6 +41,65 @@ ESP32-S3 desk display for WHOOP metrics — receives real-time HR via BLE and po
 └──────────────────────────────────┘
 ```
 
+## Status
+
+The display stack is functional and rendering live data:
+
+- **BLE HR broadcast** — real-time heart rate from WHOOP band received and displayed
+- **API polling** — recovery, strain, sleep, HRV, SpO₂ fetched every ~5 min
+- **ST7789V2** — LVGL widgets rendering on the 240×280 IPS panel via `esp_lcd_st7789`
+
+## Roadmap
+
+The display is step one. The vision is a wellness-aware desk companion that actively
+interprets WHOOP data instead of just showing numbers.
+
+### Real-time biofeedback
+
+- **HR spike alerts** — if resting HR climbs above baseline during focused work, the
+  display nudges you to breathe, stand up, or step away for 2 minutes
+- **Stress detection** — combine elevated HR + low HRV to detect stress spikes before
+  you consciously register them; prompt a box-breathing exercise
+- **HRV trend watch** — track HRV drift across the workday and warn when it's
+  trending down (chronic stress signal)
+
+### Recovery-gated work modes
+
+- **Red recovery** (≤33%) — display shows a "take it easy" mode: suggests lighter
+  work, reminds you to hydrate, flags that strain today will carry a higher cost
+- **Yellow recovery** (34–66%) — normal operation with a gentle reminder to watch
+  intensity
+- **Green recovery** (≥67%) — full send: "you're recovered, push hard today"
+
+### Sleep-debt awareness
+
+- If sleep debt exceeds 60 min, the display surfaces it during morning routines
+- Correlates sleep performance with next-day HRV to close the feedback loop
+
+### Long-term
+
+- **Ambient display modes** — clock-like face that glows red/amber/green based on
+  real-time strain vs recovery balance
+- **Historical trends** — weekly HRV, RHR, and sleep charts on-device
+- **Haptic / audio alerts** — optional buzzer for HR/stress threshold crossing
+- **Home Assistant integration** — publish metrics via MQTT for dashboarding
+
+## Enclosure
+
+A custom 3D-printed enclosure is planned:
+
+- **Form factor** — compact desk wedge, angled ~15° toward the user, footprint
+  roughly 50×40×25 mm
+- **Material** — matte PLA (dark grey or black) to avoid distracting reflections
+- **Mount** — friction-fit tray for the ESP32-S3 dev board + snap-in bezel for the
+  1.69″ LCD; no screws visible from the front
+- **Vents** — passive airflow slots on the underside; ESP32-S3 runs cool so active
+  cooling is unnecessary
+- **Cable management** — rear exit channel for USB-C power, routed downward to
+  hide the cable
+
+Design files (STEP + STL) will live in `enclosure/` once modeled.
+
 ## Building
 
 ### Prerequisites
