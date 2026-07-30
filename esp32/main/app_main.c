@@ -36,6 +36,7 @@ static void on_ble_hr(uint16_t hr_bpm, bool contact) {
 static void on_api_snapshot(const whoop_snapshot_t *snap) {
     if (!snap->valid) {
         ESP_LOGW(TAG, "API poll failed — using cached data");
+        display_set_wifi(false);
         return;
     }
 
@@ -51,7 +52,8 @@ static void on_api_snapshot(const whoop_snapshot_t *snap) {
              snap->max_hr, (int)(snap->max_hr * 0.9f));
     ESP_LOGI(TAG, "");
 
-    display_set_recovery(snap->recovery_score);
+    display_set_snapshot(snap);
+    display_set_wifi(true);
 }
 
 // ── Main task — consumes BLE HR + evaluates triggers ─────────────────────
@@ -72,8 +74,8 @@ static void main_task(void *pv) {
             if (msg.contact && msg.hr > 0) {
                 ESP_LOGI(TAG, "❤️  %3d bpm  (Δ=%.1fs)", msg.hr, delta_s);
                 last_hr = msg.hr;
-                last_hr_tick = now;
                 display_set_hr(msg.hr, true);
+                display_set_hr_stale(0);  // fresh — clear stale indicator
 
                 // ── Alert: HR above 90% of max ─────────────────────────
                 if (max_hr > 0 && msg.hr >= (uint16_t)(max_hr * 0.9f)) {
@@ -83,19 +85,22 @@ static void main_task(void *pv) {
             } else {
                 ESP_LOGI(TAG, "—  (off body / no contact)");
                 display_set_hr(0, false);
+                display_set_hr_stale(0);
             }
         }
 
-        // No HR for >10s? Log a note.
+        // No HR for >30s? Show staleness; keep last value visible.
         if (last_hr > 0) {
             TickType_t elapsed = xTaskGetTickCount() - last_hr_tick;
-            if (elapsed > pdMS_TO_TICKS(10000)) {
-                ESP_LOGW(TAG, "No HR data for %.0fs", elapsed * portTICK_PERIOD_MS / 1000.0f);
-                display_set_hr(0, true);
-                last_hr = 0; // suppress repeated warnings
+            float elapsed_s = elapsed * portTICK_PERIOD_MS / 1000.0f;
+            if (elapsed > pdMS_TO_TICKS(30000)) {
+                if (elapsed < pdMS_TO_TICKS(31000)) {  // log once per gap
+                    ESP_LOGW(TAG, "No HR data for %.0fs", (double)elapsed_s);
+                }
+                display_set_hr_stale((uint32_t)elapsed_s);
             }
         }
-    }
+}
 }
 
 // ── Entry ─────────────────────────────────────────────────────────────────

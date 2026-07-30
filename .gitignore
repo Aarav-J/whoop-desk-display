@@ -1,3 +1,6 @@
+# Environment
+.env
+
 # Credentials & tokens
 .whoop_tokens.json
 

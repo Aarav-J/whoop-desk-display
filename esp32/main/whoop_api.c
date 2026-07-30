@@ -71,6 +71,7 @@ static esp_err_t wifi_init_sta(const char *ssid, const char *pass) {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
+    esp_wifi_set_ps(WIFI_PS_NONE);
 
     // Wait for connection (max 30s)
     EventBits_t bits = xEventGroupWaitBits(g_wifi_evt,
@@ -108,7 +109,7 @@ static void poll_api(whoop_snapshot_t *snap) {
     esp_http_client_config_t http_cfg = {
         .url = g_backend_url,
         .method = HTTP_METHOD_GET,
-        .timeout_ms = 15000,
+        .timeout_ms = 30000,
         .buffer_size = MAX_HTTP_RECV,
         .user_agent = "whoop-display-esp32/1.0",
     };

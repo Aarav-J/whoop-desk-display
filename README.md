@@ -126,6 +126,36 @@ idf.py build
 idf.py -p /dev/cu.usbmodem* flash monitor
 ```
 
+## Backend proxy
+
+The ESP32 doesn't call the WHOOP API directly — it talks to a local proxy that handles
+OAuth, token refresh, and multi-endpoint aggregation, then serves a flat JSON snapshot.
+
+```bash
+# 1. Create .env from the example
+cp .env.example .env
+# Fill in your WHOOP_CLIENT_ID and WHOOP_CLIENT_SECRET
+
+# 2. Run the backend
+python3 whoop_backend.py
+```
+
+The server caches the snapshot for 60 s and refreshes on expiry. Endpoints:
+
+| Path | Purpose |
+|------|---------|
+| `GET /api/snapshot` | Flat JSON with all 9 fields the ESP32 needs |
+| `GET /health` | Liveness probe |
+
+Point the ESP32 at it via `menuconfig` → `WHOOP Desk Display` → `Backend API URL`:
+
+```
+http://<your-mac-ip>:8080/api/snapshot
+```
+
+Env vars (`WHOOP_BACKEND_PORT`, `WHOOP_BACKEND_BIND`, `WHOOP_CACHE_SECS`) can be set
+in `.env` or exported in the shell. Shell exports override `.env`.
+
 ## Verification tools
 
 | Tool | Purpose |

@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "esp_err.h"
+#include "whoop_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,11 +15,17 @@ extern "C" {
 
 esp_err_t display_init(void);
 
-// Update live heart-rate UI. hr_bpm=0 or contact=false → "—" / off-body.
+// Live heart rate from BLE. hr_bpm=0 or contact=false → off-body indicator.
 void display_set_hr(uint16_t hr_bpm, bool contact);
 
-// Optional recovery score from API (0–100). Pass 255 to hide.
-void display_set_recovery(uint8_t recovery_score);
+// Full WHOOP snapshot from API — updates all metric cells.
+void display_set_snapshot(const whoop_snapshot_t *snap);
+
+// Mark HR as stale (no recent update). seconds_ago=0 clears the indicator.
+void display_set_hr_stale(uint32_t seconds_ago);
+
+// Wi‑Fi connection status for the status bar.
+void display_set_wifi(bool connected);
 
 #ifdef __cplusplus
 }
